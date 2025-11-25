@@ -1,28 +1,43 @@
 {
   "name": "my-electron-app",
   "version": "1.0.1",
-  "description": "My first Electron app",
+  "description": "Cloud-Synced Photo Studio Manager Application",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
     "build": "electron-packager . MyApp --platform=win32 --arch=x64 --out=dist --overwrite",
-    "dist": "electron-builder"
+    "dist": "electron-builder --win --x64"
   },
   "build": {
-    "appId": "com.mycompany.myapp",
-    "productName": "MyApp",
+    "appId": "com.photostudio.manager",
+    "productName": "Photo Studio Manager",
     "win": {
       "target": "nsis"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "index.html",
+      "firebase.js",
+      "node_modules/**/*" 
+    ],
+    "publish": {
+      "provider": "github",
+      "owner": "plp9599-Studio",
+      "repo": "electron-income-expense-app",
+      "releaseType": "release"
     }
   },
-  "author": "",
+  "author": "Your Name Here",
   "license": "ISC",
   "devDependencies": {
-    "electron": "^39.2.3",
+    "electron": "^31.0.0", 
     "electron-builder": "^26.0.12",
     "electron-packager": "^17.1.1"
   },
   "dependencies": {
-    "firebase": "^12.6.0"
+    "firebase": "^12.6.0",
+    "electron-updater": "^6.3.0", 
+    "electron-log": "^4.4.1" 
   }
 }
