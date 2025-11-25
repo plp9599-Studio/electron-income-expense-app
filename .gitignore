@@ -1,0 +1,15 @@
+# Folders to ignore
+dist/
+node_modules/
+
+# Electron build files
+*.asar
+*.exe
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment files
+.env

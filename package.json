@@ -1,0 +1,28 @@
+{
+  "name": "my-electron-app",
+  "version": "1.0.0",
+  "description": "My first Electron app",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-packager . MyApp --platform=win32 --arch=x64 --out=dist --overwrite",
+    "dist": "electron-builder"
+  },
+  "build": {
+    "appId": "com.mycompany.myapp",
+    "productName": "MyApp",
+    "win": {
+      "target": "nsis"
+    }
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^39.2.3",
+    "electron-builder": "^26.0.12",
+    "electron-packager": "^17.1.1"
+  },
+  "dependencies": {
+    "firebase": "^12.6.0"
+  }
+}

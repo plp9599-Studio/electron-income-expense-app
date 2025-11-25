@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Photo Studio Manager (Cloud Sync)</title>
+
+<!-- ELECTRON CSP FIX: Explicitly allow necessary domains (Firebase, Google APIs) -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.firebaseio.com https://*.googleapis.com https://www.gstatic.com data:;">
+
+<style>
+   /* --- STYLING --- */
+   :root {
+            --bg-color: #0f172a;       
+            --card-bg: #1e293b;        
+            --text-primary: #f1f5f9;   
+            --text-secondary: #94a3b8; 
+            --accent-esewa: #62cC29;   
+            --accent-cash: #fbbf24;    
+            --accent-expense: #ef4444; 
+            --accent-highlight: #38bdf8;
+            --border-color: #334155;
+            --border-radius: 12px;
+            --font-main: system-ui, -apple-system, sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        /* NAVIGATION */
+        .nav-tabs { display: flex; gap: 10px; margin-bottom: 25px; background: var(--card-bg); padding: 6px; border-radius: 50px; border: 1px solid var(--border-color); }
+        .nav-btn { background: transparent; color: var(--text-secondary); border: none; padding: 10px 25px; border-radius: 40px; cursor: pointer; font-weight: 600; transition: 0.3s; }
+        .nav-btn.active { background: var(--accent-highlight); color: #0f172a; box-shadow: 0 0 10px rgba(56, 189, 248, 0.4); }
+        .view-section { width: 100%; max-width: 900px; display: none; }
+        .view-section.active { display: block; }
+
+        /* DASHBOARD */
+        header { text-align: center; margin-bottom: 20px; }
+        h2 { margin-bottom: 5px; font-weight: 700; letter-spacing: 0.5px; }
+        .dashboard-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 30px; }
+        .stat-card { background: var(--card-bg); padding: 20px; border-radius: var(--border-radius); text-align: center; border: 1px solid var(--border-color); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .stat-card h4 { font-size: 0.75rem; text-transform: uppercase; margin-bottom: 10px; color: var(--text-secondary); letter-spacing: 1px; }
+        .stat-card p { font-size: 1.2rem; font-weight: 700; }
+        .val-prev { color: var(--text-secondary); }
+        .val-income { color: var(--accent-esewa); } 
+        .val-expense { color: var(--accent-expense); }
+        .val-total { color: var(--accent-highlight); font-size: 1.4rem !important; }
+
+        /* FORM */
+        .form-container { background: var(--card-bg); padding: 30px; border-radius: var(--border-radius); margin-bottom: 30px; border: 1px solid var(--border-color); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        .form-row { display: flex; gap: 20px; margin-bottom: 20px; }
+        .form-group { flex: 1; }
+        label { display: block; margin-bottom: 8px; font-size: 0.9rem; color: var(--text-secondary); font-weight: 500; }
+        
+        /* Standard Date Input Styling */
+        input, select { width: 100%; padding: 14px; background-color: var(--bg-color); border: 1px solid var(--border-color); color: white; border-radius: 8px; font-size: 1rem; outline: none; transition: border-color 0.2s; }
+        input:focus, select:focus { border-color: var(--accent-highlight); }
+        input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
+
+        .btn { cursor: pointer; background-color: var(--accent-highlight); color: #0f172a; border: 0; display: block; width: 100%; padding: 14px; font-size: 1rem; font-weight: 700; border-radius: 8px; transition: transform 0.1s, opacity 0.2s, background-color 0.2s; }
+        .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn:active { transform: translateY(1px); }
+
+        /* REPORTS TABLE */
+        .report-table { width: 100%; border-collapse: separate; border-spacing: 0; background: var(--card-bg); border-radius: var(--border-radius); border: 1px solid var(--border-color); overflow: hidden; }
+        .report-table th, .report-table td { padding: 16px; text-align: left; border-bottom: 1px solid var(--border-color); }
+        .report-table th { background: #1e293b; font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 1px; font-weight: 600; }
+        .report-table tr:hover { background: #273548; cursor: pointer; }
+        .col-cash { color: var(--accent-cash); font-weight: 500; }
+        .col-esewa { color: var(--accent-esewa); font-weight: 500; }
+        
+        /* MODAL */
+        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.85); backdrop-filter: blur(4px); align-items: center; justify-content: center; }
+        .modal-content { background-color: var(--card-bg); padding: 30px; border-radius: 16px; width: 95%; max-width: 700px; max-height: 85vh; overflow-y: auto; border: 1px solid var(--border-color); }
+        .close-modal { float: right; font-size: 28px; cursor: pointer; color: var(--text-secondary); }
+        .modal-header { border-bottom: 2px solid var(--border-color); padding-bottom: 15px; margin-bottom: 20px; text-align: center;}
+        .statement-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.9rem; }
+        .statement-table th { text-align: left; padding: 10px; border-bottom: 1px solid var(--text-secondary); color: var(--text-secondary); font-size: 0.75rem; text-transform: uppercase;}
+        .statement-table td { padding: 12px 10px; border-bottom: 1px solid var(--border-color); }
+        .method-tag { font-size: 0.7rem; padding: 4px 8px; border-radius: 6px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
+        .tag-cash { background: rgba(251, 191, 36, 0.15); color: var(--accent-cash); border: 1px solid var(--accent-cash); }
+        .tag-esewa { background: rgba(98, 204, 41, 0.15); color: var(--accent-esewa); border: 1px solid var(--accent-esewa); }
+        .summary-box { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; font-size: 0.95rem; margin-top: 15px; border: 1px dashed var(--border-color); }
+
+        /* LOADING SPINNER */
+        #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 200; display: flex; justify-content: center; align-items: center; flex-direction: column; }
+        .spinner { border: 4px solid var(--card-bg); border-top: 4px solid var(--accent-highlight); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 15px;}
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* PRINT STYLES */
+        @media print {
+            body { background-color: white !important; color: black !important; padding: 0 !important; }
+            .nav-tabs, .form-container, .btn, .close-modal, .no-print, #loading-overlay { display: none !important; }
+            #dashboard-view { display: block !important; }
+            body.printing-modal .view-section { display: none !important; }
+            body.printing-modal .modal { position: static !important; background: white !important; display: block !important; height: auto !important; overflow: visible !important; }
+            body.printing-modal .modal-content { box-shadow: none !important; width: 100% !important; max-width: 100% !important; background: white !important; color: black !important; padding: 0 !important; border: none !important; height: auto !important; max-height: none !important; overflow: visible !important; }
+            .statement-table th { border-bottom: 2px solid #000 !important; color: #000 !important; }
+            .statement-table td { border-bottom: 1px solid #ddd !important; color: #000 !important; }
+            .statement-table tr { page-break-inside: avoid; }
+            .col-cash, .col-esewa, .val-income { color: black !important; font-weight: bold; }
+            .tag-cash { border: 1px solid #000; color: #000; background: none; }
+            .tag-esewa { border: 1px solid #000; color: #000; background: none; }
+            .summary-box { background: #f9f9f9 !important; color: black !important; border: 2px solid #000; }
+            .modal-header { border-bottom: 2px solid #000 !important; }
+        }
+
+        @media (max-width: 600px) {
+            .dashboard-grid { grid-template-columns: 1fr 1fr; }
+            .form-row { flex-direction: column; gap: 0; }
+            .form-group { margin-bottom: 15px; }
+            .report-table th, .report-table td { padding: 10px; font-size: 0.85rem; }
+        }
+  </style>
+</head>
+<body>
+
+<div id="loading-overlay">
+    <div class="spinner"></div>
+    <div style="color:var(--text-secondary)">Syncing with Cloud...</div>
+</div>
+
+<nav class="nav-tabs no-print">
+<button class="nav-btn active" onclick="switchTab('dashboard')">Dashboard</button>
+<button class="nav-btn" onclick="switchTab('reports')">Past Reports</button>
+</nav>
+
+<!-- DASHBOARD -->
+<div class="view-section active" id="dashboard-view">
+<header>
+<h2>PHOTO STUDIO MANAGER</h2>
+<p style="color:var(--text-secondary);">Cloud Synced • Standard Date</p>
+<br/>
+<div class="dashboard-grid">
+<div class="stat-card"><h4>Previous Bal</h4><p class="val-prev" id="prev-balance">Rs. 0.00</p></div>
+<div class="stat-card"><h4>Income (Selected Date)</h4><p class="val-income" id="today-income">+Rs. 0.00</p></div>
+<div class="stat-card"><h4>Expense (Selected Date)</h4><p class="val-expense" id="today-expense">-Rs. 0.00</p></div>
+<div class="stat-card" style="border: 1px solid var(--accent-highlight);"><h4>Net Cash Hand</h4><p class="val-total" id="total-balance">Rs. 0.00</p></div>
+</div>
+</header>
+<section class="form-container">
+<form id="form">
+<div class="form-row">
+<div class="form-group">
+    <label>Date</label>
+    <!-- STANDARD ENGLISH DATE INPUT -->
+    <input id="date" type="date" required />
+</div>
+<div class="form-group"><label>Type</label><select id="type"><option value="income">Income (Sale)</option><option value="expense">Expense (Bill)</option></select></div>
+<div class="form-group"><label>Payment Method</label><select id="method"><option value="cash">Cash</option><option value="esewa">Esewa</option></select></div>
+</div>
+<div class="form-row">
+<div class="form-group" style="flex: 2;"><label>Description</label><input id="text" placeholder="e.g. Wedding Print, Electricity Bill..." required="" type="text"/></div>
+<div class="form-group"><label>Amount (Rs.)</label><input id="amount" placeholder="0.00" required="" type="number"/></div>
+</div>
+<button id="submit-btn" class="btn">Add Transaction</button>
+</form>
+</section>
+<div style="text-align:center; color: var(--accent-esewa); font-size: 0.8rem; margin-top:10px;">🟢 Online: Changes sync automatically to all devices.</div>
+</div>
+
+<!-- REPORTS -->
+<div class="view-section" id="reports-view">
+    <header><h2>DAILY LEDGER</h2><p style="color:var(--text-secondary);">Summary by Payment Method</p></header>
+    <br/><div style="overflow-x:auto;"><table class="report-table"><thead><tr><th>Date</th><th style="color:var(--accent-cash)">Cash Flow</th><th style="color:var(--accent-esewa)">Esewa Flow</th><th>Net Balance</th></tr></thead><tbody id="reports-list"></tbody></table></div>
+</div>
+
+<!-- MODAL -->
+<div class="modal" id="daily-modal">
+    <div class="modal-content"><span class="close-modal no-print" onclick="closeModal()">×</span>
+    <div class="modal-header"><h2>PHOTO STUDIO STATEMENT</h2><h4 id="modal-date-title" style="color:var(--text-secondary); margin-top:5px;">Date: ...</h4></div>
+    <table class="statement-table"><thead><tr><th>Description</th><th style="width:100px;">Method</th><th style="text-align:right;">Amount</th><th class="no-print" style="width:60px;"></th></tr></thead><tbody id="modal-transactions-body"></tbody></table>
+    <div class="summary-box"><span>Cash: <b id="modal-cash-total" style="color:var(--accent-cash)">Rs. 0.00</b></span><span>Esewa: <b id="modal-esewa-total" style="color:var(--accent-esewa)">Rs. 0.00</b></span></div>
+    <div style="border-top: 1px solid var(--border-color); padding-top: 15px; margin-top:15px; display:flex; justify-content:space-between; font-weight:bold; font-size:1.2rem;"><span>Total Net:</span><span class="val-total" id="modal-total">Rs. 0.00</span></div>
+    <br/><button class="btn no-print" onclick="printModal()">🖨️ Print Statement</button></div>
+</div>
+
+<!-- GLOBAL UI SCRIPT -->
+<script>
+// --- GLOBAL VARIABLES ---
+window.transactions = []; 
+
+const views = { dashboard: document.getElementById('dashboard-view'), reports: document.getElementById('reports-view') };
+const navBtns = document.querySelectorAll('.nav-btn');
+const modal = document.getElementById('daily-modal');
+const dateInput = document.getElementById('date');
+const totalBalanceEl = document.getElementById('total-balance');
+const prevBalanceEl = document.getElementById('prev-balance');
+const todayIncomeEl = document.getElementById('today-income');
+const todayExpenseEl = document.getElementById('today-expense');
+
+// Set Default Date to Today (English)
+dateInput.valueAsDate = new Date();
+
+// --- UI FUNCTIONS ---
+window.switchTab = (tabName, evt) => {
+    Object.keys(views).forEach(key => views[key].classList.remove('active'));
+    views[tabName].classList.add('active');
+    navBtns.forEach(btn => btn.classList.remove('active'));
+    if (evt && evt.currentTarget) evt.currentTarget.classList.add('active');
+    if(tabName === 'reports') window.renderReports();
+}
+
+window.updateDashboard = () => {
+    if(typeof window.transactions === 'undefined') return;
+    const targetDate = document.getElementById('date').value;
+    let total = 0, prevTotal = 0, todayInc = 0, todayExp = 0;
+
+    window.transactions.forEach(t => {
+        const val = t.type === 'expense' ? -t.amount : t.amount;
+        total += val; 
+        if (t.date === targetDate) {
+            if (t.type === 'income') todayInc += t.amount;
+            if (t.type === 'expense') todayExp += t.amount;
+        } else if (t.date < targetDate) {
+            prevTotal += val;
+        }
+    });
+
+    totalBalanceEl.innerText = `Rs. ${total.toFixed(2)}`;
+    prevBalanceEl.innerText = `Rs. ${prevTotal.toFixed(2)}`;
+    todayIncomeEl.innerText = `+Rs. ${todayInc.toFixed(2)}`;
+    todayExpenseEl.innerText = `-Rs. ${todayExp.toFixed(2)}`;
+}
+
+window.renderReports = () => {
+    const list = document.getElementById('reports-list');
+    list.innerHTML = '';
+    const groups = {};
+
+    window.transactions.forEach(t => {
+        if(!groups[t.date]) groups[t.date] = { income: 0, expense: 0, cashNet: 0, esewaNet: 0, transactions: [] };
+        const val = t.type === 'expense' ? -t.amount : t.amount;
+        const method = t.method || 'cash';
+        if(t.type === 'income') groups[t.date].income += t.amount;
+        if(t.type === 'expense') groups[t.date].expense += t.amount;
+        if(method === 'esewa') groups[t.date].esewaNet += val;
+        else groups[t.date].cashNet += val;
+        groups[t.date].transactions.push(t);
+    });
+
+    // Sort dates (Newest first)
+    Object.keys(groups).sort((a,b) => new Date(b) - new Date(a)).forEach(date => {
+        const d = groups[date];
+        const net = d.income - d.expense;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${date}</td>
+            <td class="col-cash">${d.cashNet >= 0 ? '+' : ''}Rs. ${d.cashNet.toFixed(2)}</td>
+            <td class="col-esewa">${d.esewaNet >= 0 ? '+' : ''}Rs. ${d.esewaNet.toFixed(2)}</td>
+            <td style="font-weight:bold; color: ${net >= 0 ? 'var(--accent-highlight)' : 'var(--accent-expense)'}">Rs. ${net.toFixed(2)}</td>
+            <td class="no-print" style="font-size:0.85rem; text-align:right; padding-right:12px;">
+                <a href="#" onclick="editTransactionFromReport('${date}'); event.stopPropagation();" style="color:var(--accent-highlight); margin-right:12px;">Edit</a>
+                <a href="#" onclick="deleteDay('${date}'); event.stopPropagation();" style="color:var(--accent-expense);">Delete</a>
+            </td>
+        `;
+        tr.addEventListener('click', () => window.openModal(date, d));
+        list.appendChild(tr);
+    });
+}
+
+window.openModal = (date, data) => {
+    document.getElementById('modal-date-title').innerText = `Date: ${date}`;
+    const body = document.getElementById('modal-transactions-body');
+    body.innerHTML = ''; 
+    let dayTotal = 0, cashFlow = 0, esewaFlow = 0;
+
+    data.transactions.forEach(t => {
+        const method = t.method || 'cash';
+        const sign = t.type === 'expense' ? '-' : '+';
+        const val = t.type === 'expense' ? -t.amount : t.amount;
+        dayTotal += val;
+        if(method === 'cash') cashFlow += val; else esewaFlow += val;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${t.text}</td>
+            <td><span class="method-tag ${method === 'esewa' ? 'tag-esewa' : 'tag-cash'}">${method === 'esewa' ? 'eSewa' : 'Cash'}</span></td>
+            <td style="text-align:right;"><span class="${t.type === 'income' ? 'val-income' : 'val-expense'}">${sign}Rs. ${Math.abs(t.amount).toFixed(2)}</span></td>
+            <td class="no-print" style="text-align:right;">
+                <a href="#" onclick="editTransaction('${t.id}'); event.stopPropagation();" style="text-decoration:none; font-size:1.2rem;">✏️</a>
+                <a href="#" onclick="deleteTransaction('${t.id}'); event.stopPropagation();" style="text-decoration:none; font-size:1.2rem; margin-left:10px;">🗑️</a>
+            </td>
+        `;
+        body.appendChild(tr);
+    });
+
+    document.getElementById('modal-total').innerText = `Rs. ${dayTotal.toFixed(2)}`;
+    document.getElementById('modal-cash-total').innerText = `${cashFlow >= 0 ? '+' : ''}Rs. ${cashFlow.toFixed(2)}`;
+    document.getElementById('modal-esewa-total').innerText = `${esewaFlow >= 0 ? '+' : ''}Rs. ${esewaFlow.toFixed(2)}`;
+    modal.style.display = 'flex';
+}
+
+window.editTransactionFromReport = (date) => {
+    const first = window.transactions.find(t => t.date === date);
+    if (first) window.editTransaction(first.id);
+}
+
+window.closeModal = () => { modal.style.display = 'none'; document.body.classList.remove('printing-modal'); }
+window.printModal = () => { document.body.classList.add('printing-modal'); window.print(); }
+window.onclick = function(event) { if (event.target == modal) closeModal(); };
+
+// EVENT LISTENERS
+document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => switchTab(btn.getAttribute('onclick')?.match(/'([^']+)'/)?.[1] || btn.dataset.tab, e));
+});
+document.getElementById('date').addEventListener('input', () => window.updateDashboard());
+</script>
+
+<!-- FIREBASE MODULE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, query } 
+from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+// YOUR FIREBASE KEYS
+const firebaseConfig = {
+  apiKey: "AIzaSyCqn4ka5C_GiPI-CY8aiWNTPXzVFcrr6D4",
+  authDomain: "myshop-app-d5a54.firebaseapp.com",
+  projectId: "myshop-app-d5a54",
+  storageBucket: "myshop-app-d5a54.firebasestorage.app",
+  messagingSenderId: "297951594734",
+  appId: "1:297951594734:web:846dd5b3da1b60f4910bff"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const transactionsCollection = collection(db, "transactions");
+
+// Form Elements
+const form = document.getElementById('form');
+const submitBtn = document.getElementById('submit-btn');
+const textInput = document.getElementById('text');
+const amountInput = document.getElementById('amount');
+const typeInput = document.getElementById('type');
+const methodInput = document.getElementById('method');
+const dateInput = document.getElementById('date');
+const loadingOverlay = document.getElementById('loading-overlay');
+
+// REAL-TIME LISTENER
+const q = query(transactionsCollection); 
+onSnapshot(q, (snapshot) => {
+    window.transactions = [];
+    snapshot.docs.forEach(doc => {
+        window.transactions.push({ ...doc.data(), id: doc.id });
+    });
+    
+    window.transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    // Call global UI functions
+    window.updateDashboard();
+    window.renderReports();
+    loadingOverlay.style.display = 'none'; 
+}, (error) => {
+    console.error("Firebase Error:", error);
+    loadingOverlay.innerHTML = `<div style="color:var(--accent-expense);">Sync Failed: ${error.code}</div>`;
+});
+
+// ADD/EDIT LOGIC
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (textInput.value.trim() === '' || amountInput.value.trim() === '') return;
+
+    submitBtn.innerText = "⏳ Saving...";
+    submitBtn.disabled = true;
+
+    try {
+        if (form.dataset.mode === 'edit') {
+            const docRef = doc(db, "transactions", form.dataset.editId);
+            await updateDoc(docRef, {
+                date: dateInput.value,
+                text: textInput.value,
+                amount: +amountInput.value,
+                type: typeInput.value,
+                method: methodInput.value
+            });
+        } else {
+            await addDoc(transactionsCollection, {
+                text: textInput.value,
+                amount: +amountInput.value,
+                type: typeInput.value,
+                method: methodInput.value, 
+                date: dateInput.value
+            });
+        }
+
+        // Reset
+        textInput.value = '';
+        amountInput.value = '';
+        form.dataset.mode = 'add';
+        form.dataset.editId = '';
+        submitBtn.innerText = "✅ Synced!";
+        submitBtn.style.backgroundColor = 'var(--accent-esewa)';
+        
+        setTimeout(() => {
+            submitBtn.innerText = "Add Transaction";
+            submitBtn.disabled = false;
+            submitBtn.style.backgroundColor = '';
+        }, 1500);
+        setTimeout(() => { textInput.focus(); }, 10);
+
+    } catch (error) {
+        console.error("Save Error:", error);
+        alert("Error saving. Check console.");
+        submitBtn.innerText = "Add Transaction";
+        submitBtn.disabled = false;
+    }
+});
+
+// EXPORT GLOBAL ACTIONS (Attached to window so HTML onclick works)
+window.deleteTransaction = async (id) => {
+    if (!confirm('Delete this transaction permanently?')) return;
+    await deleteDoc(doc(db, "transactions", id));
+}
+window.deleteDay = async (date) => {
+    if (!confirm('Delete ALL transactions for this date?')) return;
+    const dayTrans = window.transactions.filter(t => t.date === date);
+    dayTrans.forEach(async (t) => {
+        await deleteDoc(doc(db, "transactions", t.id));
+    });
+    window.closeModal();
+}
+window.editTransaction = (id) => {
+    const t = window.transactions.find(x => x.id === id);
+    if (!t) return;
+    window.closeModal();
+    dateInput.value = t.date;
+    textInput.value = t.text;
+    amountInput.value = t.amount;
+    typeInput.value = t.type;
+    methodInput.value = t.method;
+    form.dataset.mode = 'edit';
+    form.dataset.editId = id;
+    submitBtn.innerText = 'Update Cloud Transaction';
+    window.switchTab('dashboard');
+}
+</script>
+</body>
+</html>
