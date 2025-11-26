@@ -19,6 +19,7 @@
             --accent-cash: #fbbf24;    
             --accent-expense: #ef4444; 
             --accent-highlight: #38bdf8;
+            --accent-golden: #FFD700; /* NEW: Golden bright color */
             --border-color: #334155;
             --border-radius: 12px;
             --font-main: system-ui, -apple-system, sans-serif;
@@ -36,7 +37,7 @@
             min-height: 100vh;
         }
 
-        /* NAVIGATION */
+        /* NAVIGATION: Added space for the new tab */
         .nav-tabs { display: flex; gap: 10px; margin-bottom: 25px; background: var(--card-bg); padding: 6px; border-radius: 50px; border: 1px solid var(--border-color); }
         .nav-btn { background: transparent; color: var(--text-secondary); border: none; padding: 10px 25px; border-radius: 40px; cursor: pointer; font-weight: 600; transition: 0.3s; }
         .nav-btn.active { background: var(--accent-highlight); color: #0f172a; box-shadow: 0 0 10px rgba(56, 189, 248, 0.4); }
@@ -70,55 +71,121 @@
         .btn:hover { opacity: 0.9; transform: translateY(-1px); }
         .btn:active { transform: translateY(1px); }
 
-        /* REPORTS TABLE */
-        .report-table { width: 100%; border-collapse: separate; border-spacing: 0; background: var(--card-bg); border-radius: var(--border-radius); border: 1px solid var(--border-color); overflow: hidden; }
-        .report-table th, .report-table td { padding: 16px; text-align: left; border-bottom: 1px solid var(--border-color); }
-        .report-table th { background: #1e293b; font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 1px; font-weight: 600; }
-        .report-table tr:hover { background: #273548; cursor: pointer; }
-        .col-cash { color: var(--accent-cash); font-weight: 500; }
-        .col-esewa { color: var(--accent-esewa); font-weight: 500; }
-        
-        /* MODAL */
-        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.85); backdrop-filter: blur(4px); align-items: center; justify-content: center; }
-        .modal-content { background-color: var(--card-bg); padding: 30px; border-radius: 16px; width: 95%; max-width: 700px; max-height: 85vh; overflow-y: auto; border: 1px solid var(--border-color); }
-        .close-modal { float: right; font-size: 28px; cursor: pointer; color: var(--text-secondary); }
-        .modal-header { border-bottom: 2px solid var(--border-color); padding-bottom: 15px; margin-bottom: 20px; text-align: center;}
-        .statement-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.9rem; }
-        .statement-table th { text-align: left; padding: 10px; border-bottom: 1px solid var(--text-secondary); color: var(--text-secondary); font-size: 0.75rem; text-transform: uppercase;}
-        .statement-table td { padding: 12px 10px; border-bottom: 1px solid var(--border-color); }
-        .method-tag { font-size: 0.7rem; padding: 4px 8px; border-radius: 6px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
-        .tag-cash { background: rgba(251, 191, 36, 0.15); color: var(--accent-cash); border: 1px solid var(--accent-cash); }
-        .tag-esewa { background: rgba(98, 204, 41, 0.15); color: var(--accent-esewa); border: 1px solid var(--accent-esewa); }
-        .summary-box { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; font-size: 0.95rem; margin-top: 15px; border: 1px dashed var(--border-color); }
-
-        /* LOADING SPINNER */
-        #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 200; display: flex; justify-content: center; align-items: center; flex-direction: column; }
-        .spinner { border: 4px solid var(--card-bg); border-top: 4px solid var(--accent-highlight); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 15px;}
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        /* PRINT STYLES */
-        @media print {
-            body { background-color: white !important; color: black !important; padding: 0 !important; }
-            .nav-tabs, .form-container, .btn, .close-modal, .no-print, #loading-overlay { display: none !important; }
-            #dashboard-view { display: block !important; }
-            body.printing-modal .view-section { display: none !important; }
-            body.printing-modal .modal { position: static !important; background: white !important; display: block !important; height: auto !important; overflow: visible !important; }
-            body.printing-modal .modal-content { box-shadow: none !important; width: 100% !important; max-width: 100% !important; background: white !important; color: black !important; padding: 0 !important; border: none !important; height: auto !important; max-height: none !important; overflow: visible !important; }
-            .statement-table th { border-bottom: 2px solid #000 !important; color: #000 !important; }
-            .statement-table td { border-bottom: 1px solid #ddd !important; color: #000 !important; }
-            .statement-table tr { page-break-inside: avoid; }
-            .col-cash, .col-esewa, .val-income { color: black !important; font-weight: bold; }
-            .tag-cash { border: 1px solid #000; color: #000; background: none; }
-            .tag-esewa { border: 1px solid #000; color: #000; background: none; }
-            .summary-box { background: #f9f9f9 !important; color: black !important; border: 2px solid #000; }
-            .modal-header { border-bottom: 2px solid #000 !important; }
+        /* Update Tab Specific Styling */
+        .update-card {
+            background: var(--card-bg); 
+            padding: 40px; 
+            border-radius: var(--border-radius); 
+            border: 1px solid var(--border-color);
+            text-align: center;
         }
-
-        @media (max-width: 600px) {
-            .dashboard-grid { grid-template-columns: 1fr 1fr; }
-            .form-row { flex-direction: column; gap: 0; }
-            .form-group { margin-bottom: 15px; }
-            .report-table th, .report-table td { padding: 10px; font-size: 0.85rem; }
+        .update-status {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        .status-ok { background: rgba(98, 204, 41, 0.2); color: var(--accent-esewa); }
+        .status-update { background: rgba(56, 189, 248, 0.2); color: var(--accent-highlight); }
+        .status-error { background: rgba(239, 68, 68, 0.2); color: var(--accent-expense); }
+        .update-progress { margin: 15px 0; }
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: var(--bg-color);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .progress-bar div {
+            height: 100%;
+            background: var(--accent-highlight);
+            transition: width 0.3s;
+        }
+        
+        /* --- CRITICAL FIX: Force Modal to be hidden by default --- */
+        .modal {
+            display: none !important; 
+            position: fixed; 
+            z-index: 100; 
+            left: 0; 
+            top: 0; 
+            width: 100%; 
+            height: 100%;
+            background-color: rgba(0,0,0,0.85); 
+            backdrop-filter: blur(4px); 
+            align-items: center; 
+            justify-content: center;
+        }
+        
+        /* --- PRINT STYLES FOR MAIN REPORT VIEW --- */
+        @media print {
+            /* Hide UI elements */
+            .nav-tabs, .form-container, .btn, .close-modal, .no-print, #loading-overlay, .modal { display: none !important; }
+            
+            /* Show only the Reports view when printing the report */
+            body.printing-report #reports-view {
+                display: block !important;
+                padding: 0 !important;
+                width: 100%;
+                max-width: none;
+            }
+            body.printing-report .view-section:not(#reports-view) {
+                display: none !important;
+            }
+            body.printing-report, body.printing-report header, body.printing-report table {
+                background: white !important;
+                color: black !important;
+            }
+            body.printing-report .report-table {
+                border: 1px solid #000;
+                color: black !important;
+            }
+            body.printing-report .report-table th, 
+            body.printing-report .report-table td {
+                border-bottom: 1px solid #ccc;
+                color: black !important;
+            }
+            body.printing-report .report-table th {
+                background: #eee !important;
+            }
+        }
+        
+        /* Contact Tab Styling (UPDATED) */
+        .contact-details {
+            background: var(--card-bg); 
+            padding: 30px; 
+            border-radius: var(--border-radius); 
+            border: 1px solid var(--border-color);
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .contact-details h3 {
+            color: var(--accent-golden); /* GOLDEN BRIGHT FONT */
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+        .contact-item-row {
+            background: #000000; /* BLACK BACKGROUND */
+            color: var(--accent-golden); /* GOLDEN BRIGHT FONT */
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            font-size: 1.05rem;
+            border-radius: 8px; /* ROUNDED CORNERS */
+            margin-bottom: 12px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+        }
+        .contact-item-row span:first-child {
+            color: var(--text-secondary);
+            width: 100px;
+            font-weight: 500;
+        }
+        .contact-item-row a {
+            color: var(--accent-golden);
+            text-decoration: none;
+            word-break: break-all;
         }
   </style>
 </head>
@@ -132,6 +199,8 @@
 <nav class="nav-tabs no-print">
 <button class="nav-btn active" onclick="switchTab('dashboard')">Dashboard</button>
 <button class="nav-btn" onclick="switchTab('reports')">Past Reports</button>
+<button class="nav-btn" onclick="switchTab('update')">Updates</button>
+<button class="nav-btn" onclick="switchTab('contact')">Contact</button>
 </nav>
 
 <!-- DASHBOARD -->
@@ -152,7 +221,6 @@
 <div class="form-row">
 <div class="form-group">
     <label>Date</label>
-    <!-- STANDARD ENGLISH DATE INPUT -->
     <input id="date" type="date" required />
 </div>
 <div class="form-group"><label>Type</label><select id="type"><option value="income">Income (Sale)</option><option value="expense">Expense (Bill)</option></select></div>
@@ -170,26 +238,94 @@
 
 <!-- REPORTS -->
 <div class="view-section" id="reports-view">
-    <header><h2>DAILY LEDGER</h2><p style="color:var(--text-secondary);">Summary by Payment Method</p></header>
-    <br/><div style="overflow-x:auto;"><table class="report-table"><thead><tr><th>Date</th><th style="color:var(--accent-cash)">Cash Flow</th><th style="color:var(--accent-esewa)">Esewa Flow</th><th>Net Balance</th></tr></thead><tbody id="reports-list"></tbody></table></div>
+    <header>
+        <h2 style="color: var(--accent-expense);">DAILY LEDGER FIX.2</h2>
+        <p style="color:var(--text-secondary);">Daily Totals and Net Flow by Payment Method</p>
+    </header>
+    <br/>
+    <div style="overflow-x:auto;">
+        <table class="report-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th style="color:var(--accent-esewa);">Income Total</th>
+                    <th style="color:var(--accent-expense);">Expense Total</th>
+                    <th style="color:var(--accent-cash);">Cash Net Flow</th>
+                    <th style="color:var(--accent-highlight);">Net Daily Balance</th>
+                </tr>
+            </thead>
+            <tbody id="reports-list"></tbody>
+        </table>
+    </div>
+    <div style="text-align:center; margin-top: 30px;" class="no-print">
+        <button class="btn" style="width: 250px;" onclick="window.printReportsView()">🖨️ Print Full Ledger</button>
+    </div>
 </div>
 
-<!-- MODAL -->
+<!-- UPDATE TAB (NEW) -->
+<div class="view-section" id="update-view">
+    <header><h2>APPLICATION UPDATES</h2><p style="color:var(--text-secondary);">Manage app version and availability.</p></header>
+    <section class="update-card">
+        <h3>Current Version: <span id="app-version">Loading...</span></h3>
+        <hr style="border-color:var(--border-color); margin: 20px 0;">
+
+        <div id="update-status" class="update-status status-ok">Checking for updates...</div>
+        
+        <div id="update-progress-container" class="update-progress" style="display:none;">
+            <p id="download-info" style="color:var(--text-secondary); margin-bottom: 5px;">Downloading...</p>
+            <div class="progress-bar"><div id="download-progress" style="width: 0%;"></div></div>
+        </div>
+
+        <button id="update-check-btn" class="btn" style="width: 250px; margin-top: 30px;" onclick="window.checkUpdate()">Check for New Updates</button>
+        <button id="update-install-btn" class="btn status-update" style="width: 250px; margin-top: 15px; display:none;" onclick="window.quitAndInstall()">Restart and Install Update</button>
+    </section>
+</div>
+
+<!-- CONTACT TAB (NEW) -->
+<div class="view-section" id="contact-view">
+    <header><h2>CONTACT INFORMATION</h2><p style="color:var(--text-secondary);">Support and business details.</p></header>
+    <div class="contact-details">
+        <h3>Business Contact</h3>
+        
+        <!-- Phone Row -->
+        <div class="contact-item-row">
+            <span>Phone:</span>
+            <a href="tel:+9779847309293">+977 9847309293</a>
+        </div>
+        
+        <!-- Email Row -->
+        <div class="contact-item-row">
+            <span>Email:</span>
+            <a href="mailto:sbashyal26@gmail.com">sbashyal26@gmail.com</a>
+        </div>
+        
+        <!-- Location Row (Single/Two lines max) -->
+        <div class="contact-item-row">
+            <span>Location:</span>
+            <span>Butwal 08, milanchowk rupandehi</span>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL (The content is only here, hidden by default CSS) -->
 <div class="modal" id="daily-modal">
     <div class="modal-content"><span class="close-modal no-print" onclick="closeModal()">×</span>
-    <div class="modal-header"><h2>PHOTO STUDIO STATEMENT</h2><h4 id="modal-date-title" style="color:var(--text-secondary); margin-top:5px;">Date: ...</h4></div>
+    <div class="modal-header">
+        <h4 id="modal-date-title" style="color:var(--text-secondary); margin-top:5px;">Date: ...</h4>
+    </div>
     <table class="statement-table"><thead><tr><th>Description</th><th style="width:100px;">Method</th><th style="text-align:right;">Amount</th><th class="no-print" style="width:60px;"></th></tr></thead><tbody id="modal-transactions-body"></tbody></table>
     <div class="summary-box"><span>Cash: <b id="modal-cash-total" style="color:var(--accent-cash)">Rs. 0.00</b></span><span>Esewa: <b id="modal-esewa-total" style="color:var(--accent-esewa)">Rs. 0.00</b></span></div>
     <div style="border-top: 1px solid var(--border-color); padding-top: 15px; margin-top:15px; display:flex; justify-content:space-between; font-weight:bold; font-size:1.2rem;"><span>Total Net:</span><span class="val-total" id="modal-total">Rs. 0.00</span></div>
-    <br/><button class="btn no-print" onclick="printModal()">🖨️ Print Statement</button></div>
+    <br/><!-- Removed modal print button --></div> 
 </div>
 
 <!-- GLOBAL UI SCRIPT -->
 <script>
 // --- GLOBAL VARIABLES ---
+// NOTE: Must update views object to include the new tab!
 window.transactions = []; 
 
-const views = { dashboard: document.getElementById('dashboard-view'), reports: document.getElementById('reports-view') };
+const views = { dashboard: document.getElementById('dashboard-view'), reports: document.getElementById('reports-view'), update: document.getElementById('update-view'), contact: document.getElementById('contact-view') };
 const navBtns = document.querySelectorAll('.nav-btn');
 const modal = document.getElementById('daily-modal');
 const dateInput = document.getElementById('date');
@@ -198,10 +334,109 @@ const prevBalanceEl = document.getElementById('prev-balance');
 const todayIncomeEl = document.getElementById('today-income');
 const todayExpenseEl = document.getElementById('today-expense');
 
+// Update Tab Elements
+const statusEl = document.getElementById('update-status');
+const versionEl = document.getElementById('app-version');
+const installBtn = document.getElementById('update-install-btn');
+const checkBtn = document.getElementById('update-check-btn');
+const progressContainer = document.getElementById('update-progress-container');
+const progressBar = document.getElementById('download-progress');
+const downloadInfo = document.getElementById('download-info');
+
 // Set Default Date to Today (English)
 dateInput.valueAsDate = new Date();
 
-// --- UI FUNCTIONS ---
+// --- ELECTRON PRINT LOGIC FOR MAIN REPORT VIEW ---
+window.printReportsView = () => {
+    // Add temporary class to signal CSS to show only report view
+    document.body.classList.add('printing-report');
+    window.print();
+    // Use a small delay to allow print dialog to initialize before removing class
+    setTimeout(() => {
+        document.body.classList.remove('printing-report');
+    }, 100);
+}
+
+
+// --- INITIAL ELECTRON COMMUNICATION SETUP ---
+if (window.electronAPI) {
+    // Get version immediately
+    versionEl.innerText = window.electronAPI.getAppVersion();
+    
+    // Listen for status updates from main.js
+    window.electronAPI.onUpdateStatus((event, status) => {
+        statusEl.className = 'update-status status-ok';
+        checkBtn.style.display = 'block';
+        installBtn.style.display = 'none';
+        progressContainer.style.display = 'none';
+
+        if (status.type === 'checking') {
+            statusEl.innerText = 'Checking for updates...';
+        } else if (status.type === 'available') {
+            statusEl.innerText = `Update available: v${status.info.version}. Click Download to proceed.`;
+            statusEl.classList.remove('status-ok');
+            statusEl.classList.add('status-update');
+            checkBtn.innerText = 'Download Update Now';
+            checkBtn.onclick = window.downloadUpdate;
+
+        } else if (status.type === 'not-available') {
+            statusEl.innerText = 'App is up to date!';
+            statusEl.classList.add('status-ok');
+            checkBtn.innerText = 'Check for New Updates';
+            checkBtn.onclick = window.checkUpdate;
+
+        } else if (status.type === 'downloading') {
+            statusEl.innerText = `Downloading update... (${status.progress}% complete)`;
+            statusEl.classList.remove('status-ok');
+            statusEl.classList.add('status-update');
+            checkBtn.style.display = 'none';
+            progressContainer.style.display = 'block';
+            progressBar.style.width = `${status.progress}%`;
+            downloadInfo.innerText = `Downloading v${status.info.version} (${status.progress.toFixed(1)}%)`;
+
+        } else if (status.type === 'downloaded') {
+            statusEl.innerText = `Update downloaded! Restart to install v${status.info.version}.`;
+            statusEl.classList.remove('status-update');
+            statusEl.classList.add('status-update');
+            installBtn.style.display = 'block';
+            checkBtn.style.display = 'none';
+            progressContainer.style.display = 'none';
+
+        } else if (status.type === 'error') {
+            statusEl.innerText = `Error: Could not check for updates.`;
+            statusEl.classList.add('status-error');
+        }
+    });
+} else {
+    // Fallback if not running in Electron
+    versionEl.innerText = 'Web Mode / v1.0.0 (No Auto-Updates)';
+    statusEl.innerText = 'Application updates managed externally.';
+    checkBtn.style.display = 'none';
+}
+
+
+// --- EXPORTED ELECTRON ACTIONS (Called by UI buttons) ---
+window.checkUpdate = () => {
+    if (window.electronAPI) {
+        window.electronAPI.checkUpdate();
+        statusEl.innerText = 'Checking for updates...';
+        checkBtn.innerText = 'Checking...';
+        checkBtn.disabled = true;
+        setTimeout(() => checkBtn.disabled = false, 5000);
+    }
+}
+window.downloadUpdate = () => {
+    if (window.electronAPI) {
+        window.electronAPI.downloadUpdate();
+    }
+}
+window.quitAndInstall = () => {
+    if (window.electronAPI) {
+        window.electronAPI.quitAndInstall();
+    }
+}
+
+// --- STANDARD UI FUNCTIONS ---
 window.switchTab = (tabName, evt) => {
     Object.keys(views).forEach(key => views[key].classList.remove('active'));
     views[tabName].classList.add('active');
@@ -211,7 +446,6 @@ window.switchTab = (tabName, evt) => {
 }
 
 window.updateDashboard = () => {
-    if(typeof window.transactions === 'undefined') return;
     const targetDate = document.getElementById('date').value;
     let total = 0, prevTotal = 0, todayInc = 0, todayExp = 0;
 
@@ -241,22 +475,34 @@ window.renderReports = () => {
         if(!groups[t.date]) groups[t.date] = { income: 0, expense: 0, cashNet: 0, esewaNet: 0, transactions: [] };
         const val = t.type === 'expense' ? -t.amount : t.amount;
         const method = t.method || 'cash';
-        if(t.type === 'income') groups[t.date].income += t.amount;
-        if(t.type === 'expense') groups[t.date].expense += t.amount;
-        if(method === 'esewa') groups[t.date].esewaNet += val;
-        else groups[t.date].cashNet += val;
+        
+        // --- FIX: Correctly calculate totals and net flow ---
+        // These totals are used in the new reports table structure
+        if(t.type === 'income') {
+            groups[t.date].income += t.amount;
+            if(method === 'esewa') groups[t.date].esewaNet += t.amount;
+            else groups[t.date].cashNet += t.amount;
+        } else { // Expense
+            groups[t.date].expense += t.amount;
+            if(method === 'esewa') groups[t.date].esewaNet -= t.amount;
+            else groups[t.date].cashNet -= t.amount;
+        }
+        // --- END FIX ---
+        
         groups[t.date].transactions.push(t);
     });
 
-    // Sort dates (Newest first)
     Object.keys(groups).sort((a,b) => new Date(b) - new Date(a)).forEach(date => {
         const d = groups[date];
         const net = d.income - d.expense;
         const tr = document.createElement('tr');
+        
+        // Updated table cells to match the new structure 
         tr.innerHTML = `
             <td>${date}</td>
+            <td class="col-esewa">+Rs. ${d.income.toFixed(2)}</td>
+            <td class="val-expense">-Rs. ${d.expense.toFixed(2)}</td>
             <td class="col-cash">${d.cashNet >= 0 ? '+' : ''}Rs. ${d.cashNet.toFixed(2)}</td>
-            <td class="col-esewa">${d.esewaNet >= 0 ? '+' : ''}Rs. ${d.esewaNet.toFixed(2)}</td>
             <td style="font-weight:bold; color: ${net >= 0 ? 'var(--accent-highlight)' : 'var(--accent-expense)'}">Rs. ${net.toFixed(2)}</td>
             <td class="no-print" style="font-size:0.85rem; text-align:right; padding-right:12px;">
                 <a href="#" onclick="editTransactionFromReport('${date}'); event.stopPropagation();" style="color:var(--accent-highlight); margin-right:12px;">Edit</a>
@@ -309,9 +555,9 @@ window.closeModal = () => { modal.style.display = 'none'; document.body.classLis
 window.printModal = () => { document.body.classList.add('printing-modal'); window.print(); }
 window.onclick = function(event) { if (event.target == modal) closeModal(); };
 
-// EVENT LISTENERS
+// FINAL EVENT LISTENERS
 document.querySelectorAll('.nav-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => switchTab(btn.getAttribute('onclick')?.match(/'([^']+)'/)?.[1] || btn.dataset.tab, e));
+    btn.addEventListener('click', (e) => window.switchTab(btn.getAttribute('onclick')?.match(/'([^']+)'/)?.[1] || btn.dataset.tab, e));
 });
 document.getElementById('date').addEventListener('input', () => window.updateDashboard());
 </script>
@@ -444,5 +690,6 @@ window.editTransaction = (id) => {
     window.switchTab('dashboard');
 }
 </script>
+<script src="./renderer.js"></script>
 </body>
 </html>
